@@ -36,12 +36,22 @@ def main():
 
     if osp.exists(args.output_dir):
         print("Output directory already exists:", args.output_dir)
-        sys.exit(1)
-    os.makedirs(args.output_dir)
-    os.makedirs(osp.join(args.output_dir, "JPEGImages"))
+        print("The program will write into this existing directory.")
+    else:
+        os.makedirs(args.output_dir)
+    os.makedirs(osp.join(args.output_dir, "JPEGImages"), exist_ok=True)
     if not args.noviz:
-        os.makedirs(osp.join(args.output_dir, "Visualization"))
+        os.makedirs(osp.join(args.output_dir, "Visualization"), exist_ok=True)
     print("Creating dataset:", args.output_dir)
+
+    # if osp.exists(args.output_dir):
+    #     print("Output directory already exists:", args.output_dir)
+    #     sys.exit(1)
+    # os.makedirs(args.output_dir)
+    # os.makedirs(osp.join(args.output_dir, "JPEGImages"))
+    # if not args.noviz:
+    #     os.makedirs(osp.join(args.output_dir, "Visualization"))
+    # print("Creating dataset:", args.output_dir)
 
     now = datetime.datetime.now()
 
