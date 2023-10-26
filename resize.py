@@ -17,6 +17,8 @@ import json
 import os
 import sys
 from PIL import Image
+import base64
+from io import BytesIO
 
 
 def update_coordinates_and_resize_image(json_file, image_file, output_directory, divisor):
@@ -34,13 +36,6 @@ def update_coordinates_and_resize_image(json_file, image_file, output_directory,
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    # Save the updated JSON file
-    output_json_file = os.path.join(output_directory, os.path.basename(json_file))
-    with open(output_json_file, 'w') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
-
-    print(f"Updated JSON file saved at {output_json_file}")
-
     # Load the image
     img = Image.open(image_file)
 
@@ -50,13 +45,31 @@ def update_coordinates_and_resize_image(json_file, image_file, output_directory,
     # Resize the image
     new_width = int(width / divisor)
     new_height = int(height / divisor)
-    img = img.resize((new_width, new_height), Image.ANTIALIAS)
+    img = img.resize((new_width, new_height), Image.BICUBIC)
 
     # Save the resized image file
     output_image_file = os.path.join(output_directory, os.path.basename(image_file))
     img.save(output_image_file)
-
     print(f"Resized image saved at {output_image_file}")
+
+    # Convert the resized image to base64
+    buffered = BytesIO()
+    image_format = "JPEG" if image_file.lower().endswith(".jpg") else "PNG"
+    img.save(buffered, format=image_format)
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+    # Update the JSON data
+    data['imageData'] = img_str
+    data['imageHeight'] = new_height
+    data['imageWidth'] = new_width
+
+    # Save the updated JSON file
+    output_json_file = os.path.join(output_directory, os.path.basename(json_file))
+    with open(output_json_file, 'w') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+    print(f"Updated JSON file saved at {output_json_file}")
+
 
 
 def main(input_directory, output_directory, divisor):
