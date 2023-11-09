@@ -130,6 +130,11 @@ def main():
             label = shape["label"]
             group_id = shape.get("group_id")
             shape_type = shape.get("shape_type", "polygon")
+            if shape_type == "rectangle":
+               (x1, y1), (x2, y2) = points
+               x1, x2 = sorted([x1, x2])
+               y1, y2 = sorted([y1, y2])
+               points = [(x1, y1), (x2, y2)]
             mask = labelme.utils.shape_to_mask(
                 img.shape[:2], points, shape_type
             )
