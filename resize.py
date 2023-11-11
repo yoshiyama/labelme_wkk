@@ -4,7 +4,7 @@ This Python program takes three command-line arguments: the input directory, out
 To run the program, use the following command in your terminal:
 
 ```bash
-python script.py input_directory output_directory divisor
+python resize.py input_directory output_directory divisor
 ```
 
 Where:
