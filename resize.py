@@ -4,7 +4,7 @@ This Python program takes three command-line arguments: the input directory, out
 To run the program, use the following command in your terminal:
 
 ```bash
-python script.py input_directory output_directory divisor
+python resize.py input_directory output_directory divisor
 ```
 
 Where:
@@ -17,11 +17,18 @@ import json
 import os
 import sys
 from PIL import Image
-import base64
 from io import BytesIO
-
+import base64
 
 def update_coordinates_and_resize_image(json_file, image_file, output_directory, divisor):
+    # Check if output files already exist
+    output_image_file = os.path.join(output_directory, os.path.basename(image_file))
+    output_json_file = os.path.join(output_directory, os.path.basename(json_file))
+
+    if os.path.exists(output_image_file) or os.path.exists(output_json_file):
+        print(f"Warning: Output files already exist for {json_file}. Skipping.")
+        return
+
     # Load the JSON file
     with open(json_file, 'r') as f:
         data = json.load(f)
@@ -36,19 +43,12 @@ def update_coordinates_and_resize_image(json_file, image_file, output_directory,
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    # Load the image
+    # Load and resize the image
     img = Image.open(image_file)
-
-    # Get the size of the image
     width, height = img.size
-
-    # Resize the image
-    new_width = int(width / divisor)
-    new_height = int(height / divisor)
-    img = img.resize((new_width, new_height), Image.BICUBIC)
+    img = img.resize((int(width / divisor), int(height / divisor)), Image.BICUBIC)
 
     # Save the resized image file
-    output_image_file = os.path.join(output_directory, os.path.basename(image_file))
     img.save(output_image_file)
     print(f"Resized image saved at {output_image_file}")
 
@@ -60,23 +60,16 @@ def update_coordinates_and_resize_image(json_file, image_file, output_directory,
 
     # Update the JSON data
     data['imageData'] = img_str
-    data['imageHeight'] = new_height
-    data['imageWidth'] = new_width
+    data['imageHeight'] = img.height
+    data['imageWidth'] = img.width
 
     # Save the updated JSON file
-    output_json_file = os.path.join(output_directory, os.path.basename(json_file))
     with open(output_json_file, 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-
     print(f"Updated JSON file saved at {output_json_file}")
 
-
-
 def main(input_directory, output_directory, divisor):
-    # Get all JSON files in the input directory
     json_files = [f for f in os.listdir(input_directory) if f.endswith('.json')]
-
-    # Update the coordinates in each JSON file and resize the corresponding image
     for json_file in json_files:
         json_path = os.path.join(input_directory, json_file)
         base_name = os.path.splitext(json_file)[0]
@@ -89,7 +82,6 @@ def main(input_directory, output_directory, divisor):
             update_coordinates_and_resize_image(json_path, image_file_png, output_directory, divisor)
         else:
             print(f"Image file not found for {json_file}")
-
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
