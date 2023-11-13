@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# python examples/instance_segmentation/labelme2coco.py /mnt/c/Users/keikan2/Desktop/labelme_reconst/train_input /mnt/c/Users/keikan2/Desktop/labelme_reconst/train --labels /mnt/c/Users/keikan2/Desktop/labelme_reconst/labels.txt
 
 import argparse
 import collections
@@ -195,26 +196,30 @@ def main():
 
         if not args.noviz:
             viz = img
-            if masks:
-                labels, captions, masks = zip(
-                    *[
-                        (class_name_to_id[cnm], cnm, msk)
-                        for (cnm, gid), msk in masks.items()
-                        if cnm in class_name_to_id
-                    ]
-                )
-                viz = imgviz.instances2rgb(
-                    image=img,
-                    labels=labels,
-                    masks=masks,
-                    captions=captions,
-                    font_size=15,
-                    line_width=2,
-                )
-            out_viz_file = osp.join(
-                args.output_dir, "Visualization", base + ".jpg"
-            )
-            imgviz.io.imsave(out_viz_file, viz)
+            if masks:  # 空でないことをチェック
+                mask_data = [
+                    (class_name_to_id[cnm], cnm, msk)
+                    for (cnm, gid), msk in masks.items()
+                    if cnm in class_name_to_id
+                ]
+                if mask_data:  # mask_dataが空でないことを再チェック
+                    labels, captions, masks = zip(*mask_data)
+                    viz = imgviz.instances2rgb(
+                        image=img,
+                        labels=labels,
+                        masks=masks,
+                        captions=captions,
+                        font_size=15,
+                        line_width=2,
+                    )
+                    out_viz_file = osp.join(
+                        args.output_dir, "Visualization", base + ".jpg"
+                    )
+                    imgviz.io.imsave(out_viz_file, viz)
+                else:
+                    print(f"No valid annotations found for image {base}, skipping visualization.")
+            else:
+                print(f"No annotations found for image {base}, skipping visualization.")
 
     with open(out_ann_file, "w") as f:
         json.dump(data, f)
