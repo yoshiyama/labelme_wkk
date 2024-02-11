@@ -5,6 +5,7 @@ To run the program, use the following command in your terminal:
 
 ```bash
 python resize.py input_directory output_directory divisor
+python resize.py F:\GoPro-Seto_Danchi\20231006\Front\GH020240_sampling F:\GoPro-Seto_Danchi\20231006\Front\GH020240_sampling_half 2
 ```
 
 Where:
